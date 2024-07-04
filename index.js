@@ -28,6 +28,7 @@ let keyA;
 let keyS;
 let keyD;
 let keyW;
+let dragForce = 0.1;
 
 function create() {
     let track = this.add.image(0, 0, 'track');
@@ -35,8 +36,8 @@ function create() {
     //car.setScale(0.2);
 
     honda = {
-        acceleration: 200,
-        brakeForce: 100,
+        acceleration: 2000,
+        brakeForce: 4000,
         maxSpeed: 300,
         maxRSpeed: 50,
         turnSpeed: 300,
@@ -76,14 +77,18 @@ function create() {
 function update(time, delta) {
     const dt = delta / 1000;
 
+    player.xVelocity += (player.xAcc - dragForce*player.xVelocity) * dt;
+    player.yVelocity += (player.yAcc - dragForce*player.yVelocity) * dt;
+    
     player.xpos = player.xpos + player.xVelocity*dt;
     player.ypos = player.ypos + player.yVelocity*dt;
-    player.xAcc = player.xpos - 
-    player.yAcc = 
     player.sprite.x = player.xpos;
     player.sprite.y = player.ypos;
     player.speed = Math.sqrt((player.xVelocity*player.xVelocity) + (player.yVelocity*player.yVelocity));
     
+    console.log("speed: " + player.xVelocity);
+    console.log("Drag: " + dragForce * player.xVelocity);
+
     let gasPedal = false;
     let brakePedal = false;
     let turnLeft = false;
@@ -118,20 +123,17 @@ function update(time, delta) {
     if(gasPedal) {
         accelerate(player, dt);
     }
-    
     else if(brakePedal) {
-        slowDown(player, dt);
+        //slowDown(player, dt);
     }
-    console.log(player.speed);
-    /*
     else {
-        drag();
+        drag(player, dt);
     }
     
     //turning(turnLeft, turnRight);
 
     //carRotation(car.body.speed, currentTurningAngle, axleBase);
-
+    /*
     if (isMoving) {
         if (keyA.isDown && car.body.speed > 0) {
             car.setAngularVelocity(-turnSpeed); // Skręcanie w lewo
@@ -149,12 +151,12 @@ function update(time, delta) {
 
 function accelerate(player, dt) {
     if(player.speed < player.car.maxSpeed) {
-        player.xVelocity += player.car.acceleration * Math.cos(player.rotation) * dt;
-        player.yVelocity += player.car.acceleration * Math.sin(player.rotation) * dt;
+    player.xAcc = player.car.acceleration * Math.cos(player.rotation) * dt;
+    player.yAcc = player.car.acceleration * Math.sin(player.rotation) * dt;
     }
     else {
-        player.xVelocity = player.xVelocity;
-        player.yVelocity = player.yVelocity;
+        player.xAcc = dragForce * player.xVelocity;
+        player.yAcc = dragForce * player.yVelocity;
     }
 }
 
@@ -170,11 +172,12 @@ function slowDown(player, dt) {
     }
 }
 
-/*
-function drag() {
-    car.setAcceleration(0, 0);
-}
 
+function drag(player, dt) {
+    player.xAcc = 0;
+    player.yAcc = 0;
+}
+/*
 function turning(turnLeft, turnRight) {
     if(turnLeft) {
         if(currentTurningAngle < maxTurningAngle) {
